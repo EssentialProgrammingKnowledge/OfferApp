@@ -7,6 +7,10 @@ namespace OfferApp.ConsoleApp
     {
         private readonly IMenuService _menuService;
         private readonly IBidService _bidService;
+        // Kolekcja IConsoleView.
+        // Zawuważ że każdy IConsoleView posiada KeyProvider
+        // KeyProvider jest potrzebny do wychwycenia czy dany widok odpowiada odpowiedniemu klawiszowi
+        private IEnumerable<IConsoleView> views = new List<IConsoleView>();
 
         public BidInteractionService(IMenuService menuService, IBidService bidService)
         {
@@ -29,91 +33,24 @@ namespace OfferApp.ConsoleApp
                 ShowMenus(menus);
                 var consoleKey = Console.ReadKey();
                 Console.WriteLine();
+                // inicjalizacja widoków
+                InitializeViews();
 
                 try
                 {
                     switch (consoleKey.Key)
                     {
+                        // od klawisza 1-8 będzie wywoływany odpowiedni widok
                         case ConsoleKey.D1:
-                            var bid = CreateBid();
-
-                            if (bid is null)
-                            {
-                                break;
-                            }
-
-                            bid = _bidService.AddBid(bid);
-                            Console.WriteLine($"Added Bid {bid}");
-                            break;
                         case ConsoleKey.D2:
-                            bid = GetBid();
-                            if (bid is null)
-                            {
-                                break;
-                            }
-                            Console.WriteLine($"Bid: {bid}");
-                            break;
                         case ConsoleKey.D3:
-                            bid = GetBid();
-                            if (bid is null)
-                            {
-                                break;
-                            }
-                            ModifiedBid(bid);
-                            bid = _bidService.UpdateBid(bid);
-                            Console.WriteLine($"Updated Bid {bid}");
-                            break;
                         case ConsoleKey.D4:
-                            var bids = _bidService.GetAllBids();
-                            foreach (var bidInList in bids)
-                            {
-                                Console.WriteLine($"Bid: {bidInList}");
-                            }
-                            break;
                         case ConsoleKey.D5:
-                            var id = GetBidId();
-                            _bidService.DeleteBid(id);
-                            Console.WriteLine($"Bid with id: {id} was deleted");
-                            break;
                         case ConsoleKey.D6:
-                            var bidsPublished = _bidService.GetAllPublishedBids();
-                            foreach (var bidInList in bidsPublished)
-                            {
-                                Console.WriteLine($"Bid: {bidInList}");
-                            }
-                            break;
                         case ConsoleKey.D7:
-                            bid = GetBid();
-                            if (bid is null)
-                            {
-                                break;
-                            }
-                            var publish = PublishBid(bid);
-                            if (publish is null)
-                            {
-                                break;
-                            }
-                            if (publish.Value)
-                            {
-                                Console.WriteLine(_bidService.Published(bid.Id) ? $"Published Bid with id '{bid.Id}'" : $"Cannot published Bid with id '{bid.Id}'");
-                            }
-                            else
-                            {
-                                Console.WriteLine(_bidService.Unpublished(bid.Id) ? $"Unpublished Bid with id '{bid.Id}'" : $"Cannot unpublished Bid with id '{bid.Id}'");
-                            }
-                            break;
                         case ConsoleKey.D8:
-                            bid = GetBid();
-                            if (bid is null)
-                            {
-                                break;
-                            }
-                            var bidUpValue = BidUp();
-                            if (bidUpValue is null)
-                            {
-                                break;
-                            }
-                            _bidService.BidUp(bid.Id, bidUpValue.Value);
+                            // bazując na consoleKey zostanie wywołany odpowiedni widok
+                            InvokeView(consoleKey);
                             break;
                         case ConsoleKey.D9:
                             isProgramRunning = false;
@@ -127,19 +64,11 @@ namespace OfferApp.ConsoleApp
                 {
                     Console.WriteLine(exception.Message);
                 }
+                finally
+                {
+                    DisposeViews();
+                }
             }
-        }
-
-        private BidDto? GetBid()
-        {
-            var id = GetBidId();
-            var quest = _bidService.GetBidById(id);
-
-            if (quest is null)
-            {
-                Console.WriteLine($"Quest with id {id} was not found");
-            }
-            return quest;
         }
 
         private static void ShowMenus(IEnumerable<MenuDto> menus)
@@ -151,103 +80,40 @@ namespace OfferApp.ConsoleApp
             }
         }
 
-        private BidDto? CreateBid()
+        private void InvokeView(ConsoleKeyInfo key)
         {
-            var bid = new BidDto();
-            return ModifiedBid(bid);
+            var view = GetView(key.KeyChar.ToString());
+            view.GenerateView();
         }
 
-        private BidDto? ModifiedBid(BidDto bid)
+        private IConsoleView GetView(string keyCharacter)
         {
-            if (!SetTitle(bid))
-            {
-                return null;
-            }
-            if (!SetDescription(bid))
-            {
-                return null;
-            }
-            if (!SetFirstPrice(bid))
-            {
-                return null;
-            }
-            return bid;
+            // szukamy takiego widoku który odpowiada danemu KeyProvider
+            // jeśli nie ma rzucamy wyjatkiem
+            var view = views.SingleOrDefault(v=> v.KeyProvider == keyCharacter) 
+                ?? throw new InvalidOperationException($"There is no view for key {keyCharacter}");
+            return view;
         }
 
-        private int GetBidId()
+        private void InitializeViews()
         {
-            Console.WriteLine("Please enter Bid id");
-            int.TryParse(Console.ReadLine(), out var id);
-            return id;
+            // jak widać każdy z widoków ma zależność do BidService
+            views = new List<IConsoleView>
+            {
+                new AddBidView(_bidService),
+                new BidUpView(_bidService),
+                new DeleteBidView(_bidService),
+                new GetAllBidsView(_bidService),
+                new GetBidView(_bidService),
+                new GetPublishedBidsView(_bidService),
+                new SetPublishBidView(_bidService),
+                new UpdateBidView(_bidService)
+            };
         }
 
-        private bool? PublishBid(BidDto bid)
+        private void DisposeViews()
         {
-            Console.WriteLine($"Please choose 0 to unpublish or 1 to publish Bid with id '{bid.Id}' and name '{bid.Name}'");
-            if (!int.TryParse(Console.ReadLine(), out var state))
-            {
-                Console.WriteLine("Entered invalid value");
-                return null;
-            }
-
-            if (state < 0 || state > 1)
-            {
-                return null;
-            }
-
-            return state == 1;
-        }
-
-        private decimal? BidUp()
-        {
-            Console.WriteLine("Enter value to bid up");
-
-            if (!decimal.TryParse(Console.ReadLine(), out var value))
-            {
-                Console.WriteLine("Entered invalid value");
-                return null;
-            }
-
-            return value;
-        }
-
-        private bool SetTitle(BidDto bid)
-        {
-            Console.WriteLine("Enter Bid name");
-            var name = Console.ReadLine();
-            if (string.IsNullOrWhiteSpace(name))
-            {
-                Console.WriteLine("Bid cannot be empty");
-                return false;
-            }
-            bid.Name = name;
-            return true;
-        }
-
-        private bool SetDescription(BidDto bid)
-        {
-            Console.WriteLine("Enter Bid description");
-            var description = Console.ReadLine();
-            if (string.IsNullOrWhiteSpace(description))
-            {
-                Console.WriteLine("Bid cannot be empty");
-                return false;
-            }
-            bid.Description = description;
-            return true;
-        }
-
-        private bool SetFirstPrice(BidDto bid)
-        {
-            Console.WriteLine("Enter Bid first price");
-            var description = Console.ReadLine();
-            if (!decimal.TryParse(description, out var price))
-            {
-                Console.WriteLine("Invalid Bid price");
-                return false;
-            }
-            bid.FirstPrice = price;
-            return true;
+            views = new List<IConsoleView>();
         }
     }
 }
