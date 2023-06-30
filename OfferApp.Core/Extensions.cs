@@ -13,7 +13,6 @@ namespace OfferApp.Core
         public static IServiceCollection AddCore(this IServiceCollection services)
         {
             return services
-                    .AddSingleton(typeof(IRepository<>), typeof(Repository<>))
                     .AddScoped(_ => CreateMenuService())
                     .AddScoped<IBidService, BidService>();
         }

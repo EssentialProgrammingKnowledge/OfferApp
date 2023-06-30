@@ -1,12 +1,14 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using OfferApp.ConsoleApp;
 using OfferApp.Core;
+using OfferApp.Infrastructure;
 using System.Reflection;
 
 IServiceCollection Setup()
 {
     var serviceCollection = new ServiceCollection();
     serviceCollection.AddCore()
+            .AddInfrastructure()
             .AddSingleton<BidInteractionService>();
 
     Assembly.GetExecutingAssembly().GetTypes()

@@ -2,7 +2,7 @@
 
 namespace OfferApp.Core.Repositories
 {
-    internal interface IRepository<T>
+    public interface IRepository<T>
         where T : BaseEntity
     {
         Task<int> Add(T entity);

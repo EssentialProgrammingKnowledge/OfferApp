@@ -14,6 +14,7 @@ namespace OfferApp.Core.Entities
         public bool Published { get; private set; }
 
         public Bid(int id, string name, string description, DateTime created, decimal firstPrice, DateTime? updated = null, int count = 0, decimal? lastPrice = null, bool published = false)
+            : base(id)
         {
             ValidName(name);
             ValidDescription(description);
@@ -24,7 +25,6 @@ namespace OfferApp.Core.Entities
                 ValidPrice(lastPrice.Value);
             }
 
-            Id = id;
             Name = name;
             Description = description;
             Created = created;

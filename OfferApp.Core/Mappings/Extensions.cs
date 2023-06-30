@@ -47,11 +47,7 @@ namespace OfferApp.Core.Mappings
 
         public static Menu AsEntity(this MenuDto menuDto)
         {
-            return new Menu
-            {
-                Id = menuDto.Id,
-                Name = menuDto.Name
-            };
+            return new Menu(menuDto.Id, menuDto.Name);
         }
 
     }

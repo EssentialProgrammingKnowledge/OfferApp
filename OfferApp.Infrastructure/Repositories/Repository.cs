@@ -1,6 +1,8 @@
 ﻿using OfferApp.Core.Entities;
+using OfferApp.Core.Repositories;
+using System.Reflection;
 
-namespace OfferApp.Core.Repositories
+namespace OfferApp.Infrastructure.Repositories
 {
     internal sealed class Repository<T> : IRepository<T>
         where T : BaseEntity
@@ -14,13 +16,13 @@ namespace OfferApp.Core.Repositories
 
             if (!containsList)
             {
-                entity.Id = 1;
                 list = new List<T>() { entity };
+                SetId(entity, list);
                 _entities.Add(type.Name, list);
                 return Task.FromResult(entity.Id);
             }
 
-            entity.Id = list!.Max(x => x.Id) + 1; 
+            SetId(entity, list!);
             list!.Add(entity);
             return Task.FromResult(entity.Id);
         }
@@ -72,6 +74,18 @@ namespace OfferApp.Core.Repositories
 
             list[index] = entity;
             return Task.FromResult(true);
+        }
+
+        // Aktualnie nie mamy dostępu do settera Id w klasie BaseEntity, ponieważ jest on w innym projekcie.
+        // Z tego względu zmieniłem właściwość na readonly i poprzez refleksję będę nadpisywać wartość.
+        // Nie chcemy aby ktokolwiek mógł zmienić właściwość Id.
+        // Więcej szczegółów znajdziesz w klasie BaseEntity
+        private static void SetId(T entity, List<T> list)
+        {
+            var type = typeof(T);
+            var field = type?.BaseType?.GetField($"<{nameof(BaseEntity.Id)}>k__BackingField", BindingFlags.NonPublic | BindingFlags.Instance);
+            var lastId = list?.LastOrDefault()?.Id ?? 0;
+            field?.SetValue(entity, lastId + 1);
         }
     }
 }
