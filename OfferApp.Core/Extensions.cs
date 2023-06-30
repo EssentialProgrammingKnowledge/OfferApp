@@ -14,6 +14,9 @@ namespace OfferApp.Core
         {
             return services
                     .AddSingleton(typeof(IRepository<>), typeof(Repository<>))
+                    // Poniższe serwisy możemy zarejestrować jako Singleton.
+                    // Z racji możliwości pracy z plikami, bazą ustawiłem jako scoped, a dlaczego?
+                    // Podczas pracy z plikami nie chcemy cały czas blokować dany plik chcemy dać możliwość innym procesom dostępu do niego.
                     .AddScoped(_ => CreateMenuService())
                     .AddScoped<IBidService, BidService>();
         }

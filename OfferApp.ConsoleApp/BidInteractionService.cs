@@ -10,6 +10,9 @@ namespace OfferApp.ConsoleApp
         private IServiceScope? serviceScope;
         private IEnumerable<IConsoleView> views = new List<IConsoleView>();
 
+        // Może i wygląda to na trochę anty pattern ale z drugiej strony jak chcemy podejść do wstrzykiwania zależności Scoped gdy BidInteractionService jest zarejestrowany jako Singleton?
+        // W tym przypadku wstrzyknięcie IServiceProvider nie będzie złym wyborem. Możemy opakować tworzenie obiektów w postaci dodatkowych abstrakcji.
+        // Jednak pytanie należy sobie zadać czy będzie nam to potrzebne jeśli chcemy mieć wywołanie w obrębie jednego scope?
         public BidInteractionService(IServiceProvider serviceProvider)
         {
             _serviceProvider = serviceProvider;
