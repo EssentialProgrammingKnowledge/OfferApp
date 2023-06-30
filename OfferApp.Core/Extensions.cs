@@ -1,5 +1,5 @@
-﻿using OfferApp.Core.DTO;
-using OfferApp.Core.Entities;
+﻿using Microsoft.Extensions.DependencyInjection;
+using OfferApp.Core.DTO;
 using OfferApp.Core.Repositories;
 using OfferApp.Core.Services;
 using System.Runtime.CompilerServices;
@@ -10,13 +10,18 @@ namespace OfferApp.Core
 {
     public static class Extensions
     {
-        public static IBidService CreateBidService()
+        public static IServiceCollection AddCore(this IServiceCollection services)
         {
-            var repository = new Repository<Bid>();
-            return new BidService(repository);
+            return services
+                    .AddSingleton(typeof(IRepository<>), typeof(Repository<>))
+                    // Poniższe serwisy możemy zarejestrować jako Singleton.
+                    // Z racji możliwości pracy z plikami, bazą ustawiłem jako scoped, a dlaczego?
+                    // Podczas pracy z plikami nie chcemy cały czas blokować dany plik chcemy dać możliwość innym procesom dostępu do niego.
+                    .AddScoped(_ => CreateMenuService())
+                    .AddScoped<IBidService, BidService>();
         }
 
-        public static IMenuService CreateMenuService()
+        private static IMenuService CreateMenuService()
         {
             return new MenuService(CreateMenus());
         }

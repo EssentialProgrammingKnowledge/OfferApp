@@ -1,30 +1,26 @@
-﻿using OfferApp.Core.DTO;
+﻿using Microsoft.Extensions.DependencyInjection;
+using OfferApp.Core.DTO;
 using OfferApp.Core.Services;
 
 namespace OfferApp.ConsoleApp
 {
     internal class BidInteractionService
     {
-        private readonly IMenuService _menuService;
-        private readonly IBidService _bidService;
+        private readonly IServiceProvider _serviceProvider;
+        private IServiceScope? serviceScope;
         private IEnumerable<IConsoleView> views = new List<IConsoleView>();
 
-        public BidInteractionService(IMenuService menuService, IBidService bidService)
+        public BidInteractionService(IServiceProvider serviceProvider)
         {
-            _menuService = menuService;
-            _bidService = bidService;
+            _serviceProvider = serviceProvider;
         }
 
         public void RunApp()
         {
-            if (_menuService is null || _bidService is null)
-            {
-                throw new InvalidOperationException("Cannot run app with null IMenuService or IBidService");
-            }
-
-            var menus = _menuService.GetMenus();
-
+            var menuService = _serviceProvider.GetRequiredService<IMenuService>();
+            var menus = menuService.GetMenus();
             bool isProgramRunning = true;
+
             while (isProgramRunning)
             {
                 ShowMenus(menus);
@@ -89,22 +85,15 @@ namespace OfferApp.ConsoleApp
 
         private void InitializeViews()
         {
-            views = new List<IConsoleView>
-            {
-                new AddBidView(_bidService),
-                new BidUpView(_bidService),
-                new DeleteBidView(_bidService),
-                new GetAllBidsView(_bidService),
-                new GetBidView(_bidService),
-                new GetPublishedBidsView(_bidService),
-                new SetPublishBidView(_bidService),
-                new UpdateBidView(_bidService)
-            };
+            serviceScope = _serviceProvider.CreateScope();
+            views = serviceScope.ServiceProvider.GetServices<IConsoleView>();
         }
 
         private void DisposeViews()
         {
             views = new List<IConsoleView>();
+            serviceScope?.Dispose();
+            serviceScope = null;
         }
     }
 }
