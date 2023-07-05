@@ -6,11 +6,7 @@ namespace OfferApp.Infrastructure.Cache
     {
         public static IServiceCollection AddCache(this IServiceCollection services)
         {
-            return services.AddSingleton<ICacheWrapper>(sp =>
-            {
-                var cacheOptions = sp.GetRequiredService<CacheOptions>();
-                return new CacheWrapper(cacheOptions);
-            });
+            return services.AddSingleton<ICacheWrapper, CacheWrapper>();
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 
 namespace OfferApp.Infrastructure.Database
 {
@@ -7,20 +8,20 @@ namespace OfferApp.Infrastructure.Database
         private readonly OfferDbContext _dbContext;
         private readonly DatabaseOptions _databaseOptions;
 
-        public EFDbInitializer(OfferDbContext dbContext, DatabaseOptions databaseOptions)
+        public EFDbInitializer(OfferDbContext dbContext, IOptions<DatabaseOptions> databaseOptions)
         {
             _dbContext = dbContext;
-            _databaseOptions = databaseOptions;
+            _databaseOptions = databaseOptions.Value;
         }
 
-        public void Start()
+        public async Task Start()
         {
             if (!_databaseOptions.RunMigrationsOnStart)
             {
                 return;
             }
 
-            _dbContext.Database.Migrate();
+            await _dbContext.Database.MigrateAsync();
         }
     }
 }

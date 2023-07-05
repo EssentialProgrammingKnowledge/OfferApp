@@ -1,4 +1,5 @@
-﻿using System.Runtime.Caching;
+﻿using Microsoft.Extensions.Options;
+using System.Runtime.Caching;
 
 namespace OfferApp.Infrastructure.Cache
 {
@@ -7,10 +8,10 @@ namespace OfferApp.Infrastructure.Cache
         private readonly MemoryCache _cache;
         private readonly CacheOptions _options;
 
-        public CacheWrapper(CacheOptions cacheOptions)
+        public CacheWrapper(IOptions<CacheOptions> cacheOptions)
         {
             _cache = new MemoryCache("OfferApp");
-            _options = cacheOptions;
+            _options = cacheOptions.Value;
         }
 
         public T Add<T>(string key, T item)

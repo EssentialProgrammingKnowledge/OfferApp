@@ -1,4 +1,6 @@
-﻿namespace OfferApp.Core.DTO
+﻿using FluentValidation;
+
+namespace OfferApp.Core.DTO
 {
     public class BidDto : IBaseDto
     {
@@ -17,6 +19,21 @@
             return $"Id: {Id}, Name: {Name}, Created: {Created}, FirstPrice: {FirstPrice}, "
                 + $"Published: {Published}, Updated: {Updated}, Count: {Count}, " +
                 $"LastPrice {LastPrice}, Description: {Description}";
+        }
+    }
+
+    public class BidValidator : AbstractValidator<BidDto>
+    {
+        public BidValidator()
+        {
+            RuleFor(b => b.Name).MinimumLength(4);
+            RuleFor(bid => bid.Description).MinimumLength(10).MaximumLength(3000);
+            RuleFor(bid => bid.FirstPrice).GreaterThanOrEqualTo(0);
+
+            When(b => !string.IsNullOrWhiteSpace(b.Description), () =>
+            {
+                RuleFor(bid => bid.LastPrice).GreaterThanOrEqualTo(0);
+            });
         }
     }
 }

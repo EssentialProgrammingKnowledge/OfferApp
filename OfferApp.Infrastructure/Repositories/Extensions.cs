@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using MySql.Data.MySqlClient;
 using OfferApp.Core.Entities;
 using OfferApp.Core.Repositories;
@@ -34,8 +35,8 @@ namespace OfferApp.Infrastructure.Repositories
         {
             services.AddScoped<IDbConnection, MySqlConnection>(sp =>
             {
-                var options = sp.GetRequiredService<DatabaseOptions>();
-                return new MySqlConnection(options.ConnectionString!);
+                var options = sp.GetRequiredService<IOptions<DatabaseOptions>>();
+                return new MySqlConnection(options.Value.ConnectionString!);
             });
             services.AddScoped<DapperBidRepository>();
             services.AddCache();

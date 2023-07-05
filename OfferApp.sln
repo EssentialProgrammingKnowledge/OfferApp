@@ -11,7 +11,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OfferApp.UnitTests", "Offer
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OfferApp.Infrastructure", "OfferApp.Infrastructure\OfferApp.Infrastructure.csproj", "{58C219AC-B146-4908-A6B9-603737965726}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OfferApp.Migrations", "OfferApp.Migrations\OfferApp.Migrations.csproj", "{D1183F52-537D-4408-8191-E8B031BA83DF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OfferApp.Migrations", "OfferApp.Migrations\OfferApp.Migrations.csproj", "{D1183F52-537D-4408-8191-E8B031BA83DF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OfferApp.Api", "OfferApp.Api\OfferApp.Api.csproj", "{0704CA23-3490-4B62-B5F4-5426E5B47CEE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -39,6 +41,10 @@ Global
 		{D1183F52-537D-4408-8191-E8B031BA83DF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D1183F52-537D-4408-8191-E8B031BA83DF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D1183F52-537D-4408-8191-E8B031BA83DF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0704CA23-3490-4B62-B5F4-5426E5B47CEE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0704CA23-3490-4B62-B5F4-5426E5B47CEE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0704CA23-3490-4B62-B5F4-5426E5B47CEE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0704CA23-3490-4B62-B5F4-5426E5B47CEE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

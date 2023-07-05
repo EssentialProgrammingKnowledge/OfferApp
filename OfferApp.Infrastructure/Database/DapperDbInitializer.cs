@@ -1,4 +1,5 @@
 ﻿using FluentMigrator.Runner;
+using Microsoft.Extensions.Options;
 using MySql.Data.MySqlClient;
 
 namespace OfferApp.Infrastructure.Database
@@ -8,21 +9,22 @@ namespace OfferApp.Infrastructure.Database
         private readonly DatabaseOptions _databaseOptions;
         private readonly IMigrationRunner _migrationRunner;
 
-        public DapperDbInitializer(DatabaseOptions databaseOptions, IMigrationRunner migrationRunner)
+        public DapperDbInitializer(IOptions<DatabaseOptions> databaseOptions, IMigrationRunner migrationRunner)
         {
-            _databaseOptions = databaseOptions;
+            _databaseOptions = databaseOptions.Value;
             _migrationRunner = migrationRunner;
         }
 
-        public void Start()
+        public Task Start()
         {
             if (!_databaseOptions.RunMigrationsOnStart)
             {
-                return;
+                return Task.CompletedTask;
             }
 
             CreateDatabaseIfNotExists(_databaseOptions.ConnectionString!);
             _migrationRunner.MigrateUp();
+            return Task.CompletedTask;
         }
 
         private static void CreateDatabaseIfNotExists(string connectionString)

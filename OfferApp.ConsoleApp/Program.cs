@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using OfferApp.ConsoleApp;
 using OfferApp.Core;
 using OfferApp.Infrastructure;
@@ -35,8 +36,8 @@ class Program : IDesignTimeDbContextFactory<OfferDbContext>
                            // logowanie podczas przeprowadzania migracji
                            .AddLogging(builder => builder.AddConsole())
                            .BuildServiceProvider();
-        var databaseOptions = serviceProvider.GetRequiredService<DatabaseOptions>();
-        databaseOptions.RunMigrationsOnStart = true;
+        var databaseOptions = serviceProvider.GetRequiredService<IOptions<DatabaseOptions>>();
+        databaseOptions.Value.RunMigrationsOnStart = true;
         await Console.Out.WriteLineAsync("Running Migrations...");
         serviceProvider.UseInfrastructure();
         await Console.Out.WriteLineAsync("Migrations applied");

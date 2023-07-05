@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using OfferApp.Infrastructure.Repositories;
 using OfferApp.Migrations;
 
@@ -15,9 +16,9 @@ namespace OfferApp.Infrastructure.Database
 
         public static IServiceCollection AddDbContext(this IServiceCollection services)
         {
-            var databaseOptions = services.GetService<DatabaseOptions>();
-            var serverVersion = ServerVersion.AutoDetect(databaseOptions.ConnectionString);
-            services.AddDbContext<OfferDbContext>(options => options.UseMySql(databaseOptions.ConnectionString, serverVersion));
+            var databaseOptions = services.GetService<IOptions<DatabaseOptions>>();
+            var serverVersion = ServerVersion.AutoDetect(databaseOptions.Value.ConnectionString);
+            services.AddDbContext<OfferDbContext>(options => options.UseMySql(databaseOptions.Value.ConnectionString, serverVersion));
             return services;
         }
 
@@ -31,8 +32,9 @@ namespace OfferApp.Infrastructure.Database
         {
             services.AddDapperRepositories();
             services.AddTransient<IDbInitializer, DapperDbInitializer>();
-            var databaseOptions = services.GetService<DatabaseOptions>();
-            services.AddMigrations(databaseOptions.ConnectionString!);
+            var databaseOptions = services.GetService<IOptions<DatabaseOptions>>();
+            services.AddMigrations(databaseOptions.Value.ConnectionString!); ;
+            services.AddHostedService<DatabaseInitializerService>();
             return services;
         }
 
@@ -41,6 +43,7 @@ namespace OfferApp.Infrastructure.Database
             services.AddDbContext();
             services.AddEFCoreRepositories();
             services.AddTransient<IDbInitializer, EFDbInitializer>();
+            services.AddHostedService<DatabaseInitializerService>();
             return services;
         }
     }
